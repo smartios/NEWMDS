@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Roboto-Regular.ttf">
+            <string>Roboto-Regular</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="CalendarView" id="iN0-l3-epB" customClass="CalendarView">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="250"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <datePicker contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="1" translatesAutoresizingMaskIntoConstraints="NO" id="LNh-kT-FpY">
+                    <rect key="frame" x="0.0" y="50" width="320" height="200"/>
+                    <date key="date" timeIntervalSinceReferenceDate="536585846.01777399">
+                        <!--2018-01-02 11:37:26 +0000-->
+                    </date>
+                </datePicker>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6WF-5O-fIF">
+                    <rect key="frame" x="4" y="0.0" width="155" height="47"/>
+                    <color key="backgroundColor" red="0.52549019610000003" green="0.52549019610000003" blue="0.52549019610000003" alpha="1" colorSpace="calibratedRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="47" id="ZRA-6h-Hzw"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="15"/>
+                    <state key="normal" title="Cancel">
+                        <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    </state>
+                </button>
+                <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ke1-r4-Pbr">
+                    <rect key="frame" x="161" y="0.0" width="155" height="47"/>
+                    <color key="backgroundColor" red="0.53725490200000003" green="0.53725490200000003" blue="0.53725490200000003" alpha="1" colorSpace="calibratedRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="47" id="gWc-Qj-Rpp"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="15"/>
+                    <state key="normal" title="Select">
+                        <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    </state>
+                </button>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="LNh-kT-FpY" firstAttribute="top" secondItem="6WF-5O-fIF" secondAttribute="bottom" constant="3" id="7sX-Qa-8um"/>
+                <constraint firstItem="LNh-kT-FpY" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="GC3-Zw-5YH"/>
+                <constraint firstItem="Ke1-r4-Pbr" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" id="HCP-wp-E39"/>
+                <constraint firstItem="6WF-5O-fIF" firstAttribute="width" secondItem="Ke1-r4-Pbr" secondAttribute="width" id="SHV-JU-NHk"/>
+                <constraint firstItem="6WF-5O-fIF" firstAttribute="height" secondItem="Ke1-r4-Pbr" secondAttribute="height" id="cSN-Kp-AOo"/>
+                <constraint firstItem="LNh-kT-FpY" firstAttribute="bottom" secondItem="vUN-kp-3ea" secondAttribute="bottom" id="eyI-Qk-gWJ"/>
+                <constraint firstItem="Ke1-r4-Pbr" firstAttribute="leading" secondItem="6WF-5O-fIF" secondAttribute="trailing" constant="2" id="n0k-rZ-gyo"/>
+                <constraint firstItem="LNh-kT-FpY" firstAttribute="trailing" secondItem="vUN-kp-3ea" secondAttribute="trailing" id="omI-zT-rjs"/>
+                <constraint firstItem="6WF-5O-fIF" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="4" id="pWy-0L-1k7"/>
+                <constraint firstItem="Ke1-r4-Pbr" firstAttribute="trailing" secondItem="vUN-kp-3ea" secondAttribute="trailing" constant="-4" id="sR7-Et-4ev"/>
+                <constraint firstItem="6WF-5O-fIF" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" id="zsr-2o-4uN"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="cancel" destination="6WF-5O-fIF" id="l5B-nN-Mal"/>
+                <outlet property="datePicker" destination="LNh-kT-FpY" id="9W5-1B-b3k"/>
+                <outlet property="select" destination="Ke1-r4-Pbr" id="5qU-Gl-TSn"/>
+            </connections>
+        </view>
+    </objects>
+</document>

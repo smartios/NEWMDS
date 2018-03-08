@@ -1,0 +1,91 @@
+//
+//  PrefixHeader.pch
+//  MDS
+//
+//  Created by SL-167 on 12/4/17.
+//  Copyright © 2017 SL-167. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+
+#endif /* PrefixHeader_pch */
+
+#define appDelegate ((AppDelegate *)[UIApplication sharedApplication].delegate)
+
+#import <Fabric/Fabric.h>
+#import <Crashlytics/Crashlytics.h>
+#import <DBChooser/DBChooser.h>
+
+
+#import "AppDelegate.h"
+#import "SVProgressHUD.h"
+#import "WebConnector.h"
+#import "Reachability.h"
+#import "GeneralFunction.h"
+
+//static NSString *BaseURL = @"http://115.249.91.204/mds/public/";
+//develop URL
+
+//static NSString *BaseURL = @"http://103.15.232.35/singsys-stg3/mds/public/";
+
+
+//static NSString *BaseURL = @"http://192.168.5.101/mds_n/public/";
+////kaif URL
+
+//static NSString *BaseURL = @"http://192.168.7.36/mds/public/";
+////seher URL
+
+static NSString *BaseURL = @"http://mds.westixx.customer.hostsg.com/staging/public/index.php/";
+static NSString *imageBaseURL = @"http://mds.westixx.customer.hostsg.com/staging/public/";
+
+/*WARNING: DO NOT CHNAGE THE KEY*/
+#define encryptionKey @"6A161B73121C9CC7D2D52B1EA7C61"
+
+//static NSString *filebaseUrl = @"";
+
+//messages for login & FP & RP
+static NSString *emptyEmail = @"Please enter email address.";
+static NSString *validEmail = @"Email address is invalid.";
+static NSString *Emptypassword = @"Please enter new password.";
+static NSString *validPassword = @"The new password must contain one upper letter, one number and must contain at least 8 - 20 characters.";
+static NSString *currentEmptyPass = @"Please enter old password.";
+static NSString *confirmEmptyPass = @"Please enter confirm password.";
+static NSString *matchPassword = @"New Password and Confirm New Password doesn't match.";
+static NSString *Emptymessage = @"Please enter your message.";
+static NSString *trPermission = @"Access request has been sent to admin, device approval pending,please contact the admin for further information";
+
+
+//messages for editP
+static NSString *emptyFName = @"Please enter first name.";
+static NSString *emptyLName = @"Please enter last name.";
+static NSString *emptyPhone = @"Please enter mobile number.";
+static NSString *emptyProfile = @"Please select profile picture.";
+
+//create tr
+static NSString *emptyDate = @"Please select date for TR.";
+static NSString *emptyTime = @"Please select time for TR.";
+//static NSString *emptyTitle = @"Please select title for TR.";
+
+static NSString *emptyUsers = @"Please select users for TR.";
+static NSString *emptyMessage = @"Please enter message for TR.";
+static NSString *emptyDestroy = @"Please select destroy time for TR.";
+static NSString *emptypassword = @"Please enter password for TR.";
+static NSString *emptyCPassword = @"Please confirm your password for TR.";
+static NSString *matchTRPassword = @"Password and confirm password does not match.";
+
+//create ir
+
+static NSString *emptyTitle = @"Please enter title.";
+static NSString *emptydata = @"Please enter message or select some files to report incident.";
+
+//datepicekr messages
+static NSString *emptyFromDate = @"Please select from date..";
+static NSString *emptyToDate = @"Please select To date.";
+static NSString *checkDate = @"The from date should not be later than to date.";
+
+
