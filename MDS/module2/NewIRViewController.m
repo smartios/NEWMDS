@@ -116,13 +116,13 @@
         textView.text = @"Enter your comment";
         dataArray = [[dataDic valueForKey:@"incident_files"] mutableCopy];
         
-        if([dataDic valueForKey: @"location"] != nil && ![[dataDic valueForKey: @"location"] isKindOfClass:[NSNull class]] && ![[dataDic valueForKey: @"location"] isEqualToString:@""] )
-        {
-            NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
-            [dic setValue:@"text" forKey:@"type"];
-            [dic setValue:[dataDic valueForKey: @"location"] forKey:@"message"];
-            [dataArray insertObject:dic atIndex:0];
-        }
+//        if([dataDic valueForKey: @"location"] != nil && ![[dataDic valueForKey: @"location"] isKindOfClass:[NSNull class]] && ![[dataDic valueForKey: @"location"] isEqualToString:@""] )
+//        {
+//            NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+//            [dic setValue:@"text" forKey:@"type"];
+//            [dic setValue:[dataDic valueForKey: @"location"] forKey:@"message"];
+//            [dataArray insertObject:dic atIndex:0];
+//        }
         
         [dataDic removeObjectForKey:@"incident_files"];
         [self.tableView reloadData];
@@ -224,24 +224,67 @@
         return [[dataDic valueForKey:@"commentArray"] count]+1;
     }
     
-    return [dataArray count];
+//    if([[[dataDic valueForKey:@"ir_close_comment_status"] uppercaseString] isEqualToString:@"Y"] && [[dataDic valueForKey:@"close_comment_reason"] count] > 0)
+//    {
+//        return [dataArray count] + 1;
+//    }
+    return [dataArray count] + 1;
 }
 
-//-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-//{
-//
-//    return 100;
-//}
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if(indexPath.section == 0 && indexPath.row == 0)
+    {
+    if([[[dataDic valueForKey:@"ir_close_comment_status"] uppercaseString] isEqualToString:@"Y"] && [dataDic valueForKey:@"close_comment_reason"] != nil && ![[dataDic valueForKey:@"close_comment_reason"] isKindOfClass:[NSNull class]] && ![[dataDic valueForKey:@"close_comment_reason"] isEqualToString:@"<null>"] && [[dataDic valueForKey:@"close_comment_reason"] length] > 0)
+    {
+    }
+    else
+    {
+        return 0;
+    }
+    }
+    return UITableViewAutomaticDimension;
+}
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [[UITableViewCell alloc] init];
-    
+    [cell setHidden:NO];
+
     if([dataArray count] > 0 && indexPath.section == 0)
     {
+        if(indexPath.row == 0)
+        {
+            cell = [self.tableView dequeueReusableCellWithIdentifier:@"commentCell"  forIndexPath: indexPath];
+
+            UILabel *charLbl = [cell viewWithTag:1];
+            UILabel *nameLbl = [cell viewWithTag:2];
+            UILabel *timeLbl = [cell viewWithTag:3];
+            UILabel *messageLbl = [cell viewWithTag:4];
+            charLbl.layer.cornerRadius = charLbl.frame.size.width/2;
+            charLbl.text = [NSString stringWithFormat:@"%c", [[[[[[NSUserDefaults standardUserDefaults] valueForKey:@"userData"]valueForKey:@"users_details"] valueForKey:@"first_name"] uppercaseString] characterAtIndex:0]];                nameLbl.text = [NSString stringWithFormat:@"Closing Comment"];
+
+            [timeLbl setHidden:YES];
+            
+            
+            
+            if([[[dataDic valueForKey:@"ir_close_comment_status"] uppercaseString] isEqualToString:@"Y"] && [dataDic valueForKey:@"close_comment_reason"] != nil && ![[dataDic valueForKey:@"close_comment_reason"] isKindOfClass:[NSNull class]] && ![[dataDic valueForKey:@"close_comment_reason"] isEqualToString:@"<null>"] &&  [[dataDic valueForKey:@"close_comment_reason"] length] > 0)
+            {
+                messageLbl.text = [dataDic valueForKey:@"close_comment_reason"];
+
+                [cell setHidden:NO];
+            }
+            else
+            {
+                [cell setHidden:YES];
+            }
+            
+            return cell;
+        }
+        
         UILongPressGestureRecognizer *longGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressGesture:)];
         
-        if([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"text"])
+        if([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"text"])
         {
             cell = [self.tableView dequeueReusableCellWithIdentifier:@"senderCell"  forIndexPath: indexPath];
             UIView *bgView = [cell viewWithTag:1];
@@ -256,13 +299,13 @@
                 bgView.clipsToBounds = true;
                 bgView.backgroundColor = [UIColor colorWithRed:(255/255.0) green:(234/255.0) blue:(234/255.0) alpha:1.0];
                 
-                textLabel.text = [[dataArray objectAtIndex:indexPath.row] valueForKey:@"message"];
+                textLabel.text = [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"message"];
                 [textLabel sizeToFit];
                 statusImageView.backgroundColor = [UIColor clearColor];
             }
             else
             {
-                NSString *rawString = [[dataArray objectAtIndex:indexPath.row] valueForKey:@"message"];
+                NSString *rawString = [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"message"];
                 
                 NSArray *messageArr = [appDelegate.constant getMessageAndIV:rawString];
                 
@@ -278,12 +321,12 @@
                 }
             }
             
-            if([[dataArray objectAtIndex:indexPath.row] valueForKey:@"generated_at"] != nil)
+            if([[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"generated_at"] != nil)
             {
                 NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
                 [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
                 
-                NSDate *tempDate = [dateFormatter dateFromString:[[dataArray objectAtIndex:indexPath.row] valueForKey:@"generated_at"]];
+                NSDate *tempDate = [dateFormatter dateFromString:[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"generated_at"]];
                 dateFormatter.AMSymbol =@"AM";
                 dateFormatter.PMSymbol =@"PM";
                 [dateFormatter setDateFormat:@"hh:mm a"];
@@ -296,7 +339,7 @@
                 timeLabel.text = @"";
             }
         }
-        else if([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"audio"])
+        else if([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"audio"])
         {
             cell = [self.tableView dequeueReusableCellWithIdentifier:@"senderAudioCell"  forIndexPath: indexPath];
             UIView *bgView = [cell viewWithTag:1];
@@ -325,9 +368,9 @@
             {
                 [bgView addGestureRecognizer:longGesture];
                 
-                if([[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressivePlaying"] != nil && [[[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressivePlaying"] integerValue] < 1 && [[dataArray objectAtIndex:indexPath.row] objectForKey:@"generated_at"] == [playingDict objectForKey:@"generated_at"])
+                if([[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressivePlaying"] != nil && [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressivePlaying"] integerValue] < 1 && [[dataArray objectAtIndex:indexPath.row - 1] objectForKey:@"generated_at"] == [playingDict objectForKey:@"generated_at"])
                 {
-                    [progressView setProgress:[[[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressivePlaying"] floatValue]];
+                    [progressView setProgress:[[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressivePlaying"] floatValue]];
                     [playBtn setImage:[UIImage imageNamed:@"stop"] forState:UIControlStateNormal];
                 }
                 else
@@ -341,21 +384,21 @@
                 //                NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true);
                 //                NSString *documentPath = [paths objectAtIndex:0];
                 //
-                //                NSArray *tempFileArr = [[NSArray alloc] initWithArray:[[[dataArray objectAtIndex:indexPath.row] valueForKey:@"file"] componentsSeparatedByString:@"/"]];
+                //                NSArray *tempFileArr = [[NSArray alloc] initWithArray:[[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file"] componentsSeparatedByString:@"/"]];
                 //                NSString *fileName = [tempFileArr objectAtIndex:[tempFileArr count] - 1];
                 //
                 //                NSString *filePath = [NSString stringWithFormat:@"%@/%@",documentPath,fileName];
                 //                NSFileManager *fileManager = [NSFileManager defaultManager];
                 
-                if([[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressive"] != nil && [[[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressive"] integerValue] != 1)
+                if([[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressive"] != nil && [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressive"] integerValue] != 1)
                 {
                     [playBtn setHidden:true];
                     [ActivityIndicator setHidden:false];
                     [ActivityIndicator startAnimating];
                 }
-                else if([[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressivePlaying"] != nil && [[[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressivePlaying"] integerValue] < 1 && [[dataArray objectAtIndex:indexPath.row] objectForKey:@"id"] == [playingDict objectForKey:@"id"])
+                else if([[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressivePlaying"] != nil && [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressivePlaying"] integerValue] < 1 && [[dataArray objectAtIndex:indexPath.row - 1] objectForKey:@"id"] == [playingDict objectForKey:@"id"])
                 {
-                    [progressView setProgress:[[[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressivePlaying"] floatValue]];
+                    [progressView setProgress:[[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressivePlaying"] floatValue]];
                     [playBtn setImage:[UIImage imageNamed:@"stop"] forState:UIControlStateNormal];
                 }
                 else
@@ -365,14 +408,14 @@
                 }
             }
             
-            int totalSec = [[[dataArray objectAtIndex:indexPath.row] valueForKey:@"duration"] intValue];
+            int totalSec = [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"duration"] intValue];
             int minutes = totalSec/60;
             int sec = totalSec % 60;
             counterLabel.text = [NSString stringWithFormat:@"%d:%d",minutes,sec];
             
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
             [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-            NSDate *tempDate = [dateFormatter dateFromString:[[dataArray objectAtIndex:indexPath.row] valueForKey:@"generated_at"]];
+            NSDate *tempDate = [dateFormatter dateFromString:[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"generated_at"]];
             dateFormatter.AMSymbol =@"AM";
             dateFormatter.PMSymbol =@"PM";
             [dateFormatter setDateFormat:@"hh:mm a"];
@@ -380,7 +423,7 @@
             NSString *dateStr = [dateFormatter stringFromDate:tempDate];
             timeLabel.text = dateStr;
         }
-        else if([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"image"] || [[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"video"])
+        else if([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"image"] || [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"video"] || [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] containsString:@"video"])
         {
             cell = [self.tableView dequeueReusableCellWithIdentifier:@"senderMediaCell"  forIndexPath: indexPath];
             
@@ -403,16 +446,17 @@
             [mediaButton addTarget:self action:@selector(mediaMessageTapped:) forControlEvents:UIControlEventTouchUpInside];
             if([_from isEqualToString:@"new"])
             {
+                
                 [bgView addGestureRecognizer:longGesture];
-                if ([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"video"])
+                if ([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"video"] || [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] containsString:@"video"])
                 {
-                    [imageView setImage:[UIImage imageWithData:[[dataArray objectAtIndex:indexPath.row] valueForKey:@"thumb"]]];
+                    [imageView setImage:[UIImage imageWithData:[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"thumb"]]];
                     [mediaButton setImage:[UIImage imageNamed:@"videoPlay"] forState:UIControlStateNormal];
                     [mediaButton setHidden:false];
                 }
                 else
                 {
-                    [imageView setImage:[UIImage imageWithData:[[dataArray objectAtIndex:indexPath.row] valueForKey:@"file"]]];
+                    [imageView setImage:[UIImage imageWithData:[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file"]]];
                 }
                 [mediaButton setBackgroundColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.1]];
             }
@@ -424,7 +468,7 @@
                 NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true);
                 NSString *documentPath = [paths objectAtIndex:0];
                 
-                NSArray *tempFileArr = [[NSArray alloc] initWithArray:[[[dataArray objectAtIndex:indexPath.row] valueForKey:@"file"] componentsSeparatedByString:@"/"]];
+                NSArray *tempFileArr = [[NSArray alloc] initWithArray:[[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file"] componentsSeparatedByString:@"/"]];
                 NSString *fileName = [tempFileArr objectAtIndex:[tempFileArr count] - 1];
                 
                 NSString *filePath = [NSString stringWithFormat:@"%@/%@",documentPath,fileName];
@@ -432,14 +476,25 @@
                 [mediaButton setTitle:@"" forState:UIControlStateNormal];
                 //
                 //[NSString stringWithFormat:@"%@uploads/ir_images/%@",imageBaseURL, fileName]
-                [imageView setImageWithURL:[NSURL URLWithString: [[dataArray objectAtIndex:indexPath.row] valueForKey:@"file"]] placeholderImage:[UIImage imageNamed:@"image_default"]];
+                
+                if ([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"video"] || [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] containsString:@"video"])
+                {
+                    [imageView setImageWithURL:[NSURL URLWithString: [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"thumb_name"]] placeholderImage:[UIImage imageNamed:@"image_default"]];
+                    
+                }
+                else
+                {
+                    [imageView setImageWithURL:[NSURL URLWithString: [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file"]] placeholderImage:[UIImage imageNamed:@"image_default"]];
+                    
+                }
+                
                 [mediaButton setHidden:false];
                 
-                if ([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"video"])
+                if ([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"video"] || [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] containsString:@"video"])
                 {
                     if([fileManager fileExistsAtPath:filePath])
                     {
-                        [mediaButton setBackgroundColor:[UIColor whiteColor]];
+                        [mediaButton setBackgroundColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.1]];
                         [mediaButton setImage:[UIImage imageNamed:@"videoPlay"] forState:UIControlStateNormal];
                     }
                     else
@@ -448,7 +503,7 @@
                         [mediaButton setImage:[UIImage imageNamed:@"download"] forState:UIControlStateNormal];
                     }
                 }
-                else if ([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"image"])
+                else if ([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"image"])
                 {
                     if(![fileManager fileExistsAtPath:filePath])
                     {
@@ -462,7 +517,7 @@
                     }
                 }
                 
-                if([[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressive"] != nil && [[[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressive"] integerValue] != 1)
+                if([[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressive"] != nil && [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressive"] integerValue] != 1)
                 {
                     [mediaButton setHidden:true];
                     [ActivityIndicator setHidden:false];
@@ -476,12 +531,12 @@
             dateFormatter.AMSymbol =@"AM";
             dateFormatter.PMSymbol =@"PM";
             
-            NSDate *tempDate = [dateFormatter dateFromString:[[dataArray objectAtIndex:indexPath.row] valueForKey:@"generated_at"]];
+            NSDate *tempDate = [dateFormatter dateFromString:[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"generated_at"]];
             [dateFormatter setDateFormat:@"hh:mm a"];
             NSString *dateStr = [dateFormatter stringFromDate:tempDate];
             timeLabel.text = dateStr;
         }
-        else if([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"file"])
+        else if([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"file"])
         {
             cell = [self.tableView dequeueReusableCellWithIdentifier:@"senderDocCell"  forIndexPath: indexPath];
             UIView *bgView = [cell viewWithTag:1];
@@ -521,16 +576,16 @@
                 NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true);
                 NSString *documentPath = [paths objectAtIndex:0];
                 
-                NSArray *tempArr2 = [[NSArray alloc] initWithArray:[[[dataArray objectAtIndex:indexPath.row] valueForKey:@"file"] componentsSeparatedByString:@"/"]];
+                NSArray *tempArr2 = [[NSArray alloc] initWithArray:[[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file"] componentsSeparatedByString:@"/"]];
                 NSString *fileName = [tempArr2 objectAtIndex:[tempArr2 count] - 1];
                 textLabel.text = [fileName componentsSeparatedByString:@"_mds_"][1];
                 NSString *filePath = [NSString stringWithFormat:@"%@/%@",documentPath,fileName];
                 NSFileManager *fileManager = [NSFileManager defaultManager];
                 
                 sizeLabel.text = @"";
-                // sizeLabel.text = [self transformedValue:[[[dataArray objectAtIndex:indexPath.row] objectForKey:@"filesize"] longLongValue]];
+                // sizeLabel.text = [self transformedValue:[[[dataArray objectAtIndex:indexPath.row - 1] objectForKey:@"filesize"] longLongValue]];
                 
-                if ([[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressive"] != nil && [[[dataArray objectAtIndex:indexPath.row] valueForKey:@"progressive"] integerValue] < 1)
+                if ([[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressive"] != nil && [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"progressive"] integerValue] < 1)
                 {
                     downloadButton.hidden = true;
                     ActivityIndicator.hidden = false;
@@ -580,7 +635,7 @@
             
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
             [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-            NSDate *tempDate = [dateFormatter dateFromString:[[dataArray objectAtIndex:indexPath.row] valueForKey:@"generated_at"]];
+            NSDate *tempDate = [dateFormatter dateFromString:[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"generated_at"]];
             [dateFormatter setTimeZone:[NSTimeZone localTimeZone]];
             dateFormatter.AMSymbol =@"AM";
             dateFormatter.PMSymbol =@"PM";
@@ -590,29 +645,30 @@
             NSString *dateStr = [dateFormatter stringFromDate:tempDate];
             timeLabel.text = dateStr;
         }
-        else if([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"map"])
+        else if([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"map"])
         {
-            cell = [self.tableView dequeueReusableCellWithIdentifier:@"mapView"  forIndexPath: indexPath];
+            cell = [self.tableView dequeueReusableCellWithIdentifier:@"mapView"];
             UILabel *timeLabel = [cell viewWithTag:2];
             GMSMapView *map = [cell viewWithTag:1];
-            
-            double lat = [[NSString stringWithFormat:@"%@", [[dataArray objectAtIndex:indexPath.row] valueForKey:@"latitude"]] doubleValue];
-            double lon = [[NSString stringWithFormat:@"%@", [[dataArray objectAtIndex:indexPath.row] valueForKey:@"longitude"]] doubleValue];
+            [map clear];
+            double lat = [[NSString stringWithFormat:@"%@", [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"latitude"]] doubleValue];
+            double lon = [[NSString stringWithFormat:@"%@", [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"longitude"]] doubleValue];
             CLLocationCoordinate2D position = CLLocationCoordinate2DMake(lat, lon);
+             dispatch_async(dispatch_get_main_queue(), ^{
             GMSMarker *marker = [GMSMarker markerWithPosition:position];
             marker.map = map;
             [map animateToLocation:position];
             [map animateToZoom:15.0];
+            
             map.settings.scrollGestures = false;
-            map.settings.rotateGestures = false;
-            map.settings.tiltGestures = false;
-            
             marker.icon = [UIImage imageNamed:@"location"];
+                 });
             
+//            TODO
             
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
             [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-            NSDate *tempDate = [dateFormatter dateFromString:[[dataArray objectAtIndex:indexPath.row] valueForKey:@"generated_at"]];
+            NSDate *tempDate = [dateFormatter dateFromString:[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"generated_at"]];
             [dateFormatter setTimeZone:[NSTimeZone localTimeZone]];
             dateFormatter.AMSymbol =@"AM";
             dateFormatter.PMSymbol =@"PM";
@@ -641,7 +697,9 @@
             UILabel *messageLbl = [cell viewWithTag:4];
             charLbl.layer.cornerRadius = charLbl.frame.size.width/2;
             
-            
+            [timeLbl setHidden:NO];
+
+            [cell setHidden:NO];
             
             if([[NSString stringWithFormat:@"%@", [[[dataDic valueForKey:@"commentArray"] objectAtIndex:indexPath.row-1] valueForKey:@"comment_by"]] isEqualToString:[NSString stringWithFormat:@"%@", [[[[NSUserDefaults standardUserDefaults] valueForKey:@"userData"]valueForKey:@"users_details"] valueForKey:@"user_id"]]])
             {
@@ -684,6 +742,32 @@
         cell.contentView.backgroundColor = [UIColor whiteColor];
     }
     return cell;
+}
+
+
+- (IBAction)mapImageTapped :(UIButton*)sender
+{
+//    TODO
+    CGPoint hitPoint = [sender convertPoint:CGPointZero toView:self.tableView];
+    NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint: hitPoint];
+    double lat = [[NSString stringWithFormat:@"%@", [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"latitude"]] doubleValue];
+    double lon = [[NSString stringWithFormat:@"%@", [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"longitude"]] doubleValue];
+    
+    
+    NSLog(@"Image Tapped");
+//    NSString* directionsURL = @"http://maps.apple.com/?address=1.301279,103.854541";
+    NSString* directionsURL = [NSString stringWithFormat:@"http://maps.apple.com/?address=%f,%f",lat,lon];
+
+    if ([[UIApplication sharedApplication] respondsToSelector:@selector(openURL:options:completionHandler:)]) {
+        if (@available(iOS 10.0, *)) {
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString: directionsURL] options:@{} completionHandler:^(BOOL success) {}];
+        } else {
+            // Fallback on earlier versions
+        }
+    } else {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString: directionsURL]];
+    }
+    
 }
 
 //MARK:- TextView
@@ -1048,7 +1132,7 @@
             [dic setValue:[[dataArray objectAtIndex:i] valueForKey:@"file_name"] forKey:@"file_name"];
             [dic setValue:[[dataArray objectAtIndex:i] valueForKey:@"file"] forKey:@"file"];
         }
-        else if([[[dataArray objectAtIndex:i] valueForKey:@"type"] isEqualToString:@"video"])
+        else if([[[dataArray objectAtIndex:i] valueForKey:@"type"] isEqualToString:@"video"] || [[[dataArray objectAtIndex: i] valueForKey:@"type"] containsString:@"video_"])
         {
             [dic setValue:@"video" forKey:@"type"];
             [dic setValue:[[dataArray objectAtIndex:i] valueForKey:@"file"] forKey:@"file"];
@@ -1063,7 +1147,6 @@
         
         [mutDic setValue:dic forKey:[NSString stringWithFormat:@"incident_files[%d]",i]];
     }
-    
     
     [mutDic setValue:[dataDic valueForKey:@"title"] forKey:@"title"];
     [mutDic setValue:[dataDic valueForKey:@"date"] forKey:@"incident_post_time"];
@@ -1252,7 +1335,7 @@
 {
     CGPoint hitPoint = [sender convertPoint:CGPointZero toView:self.tableView];
     NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint: hitPoint];
-    playingDict = [[dataArray objectAtIndex:indexPath.row] mutableCopy];
+    playingDict = [[dataArray objectAtIndex:indexPath.row - 1] mutableCopy];
     
     if([_from isEqualToString:@"new"])
     {
@@ -1264,7 +1347,7 @@
         [audioPlayer prepareToPlay];
         [audioPlayer play];
         
-        NSMutableDictionary *dic = [[dataArray objectAtIndex:indexPath.row] mutableCopy];
+        NSMutableDictionary *dic = [[dataArray objectAtIndex:indexPath.row - 1] mutableCopy];
         [dic setObject:[NSNumber numberWithFloat:0.0] forKey:@"progressivePlaying"];
         [dataArray replaceObjectAtIndex:indexPath.row withObject:dic];
         
@@ -1275,12 +1358,12 @@
     }
     else
     {
-        if ([[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] != nil && ![[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isKindOfClass:[NSNull class]] && ![[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@""])
+        if ([[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] != nil && ![[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isKindOfClass:[NSNull class]] && ![[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@""])
         {
             NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true);
             NSString *documentPath = [paths objectAtIndex:0];
             
-            NSArray *tempArr2 = [[NSArray alloc] initWithArray:[[[dataArray objectAtIndex:indexPath.row] valueForKey:@"file"] componentsSeparatedByString:@"/"]];
+            NSArray *tempArr2 = [[NSArray alloc] initWithArray:[[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file"] componentsSeparatedByString:@"/"]];
             NSString *fileName = [tempArr2 objectAtIndex:[tempArr2 count] - 1];
             
             NSString *filePath = [NSString stringWithFormat:@"%@/%@",documentPath,fileName];
@@ -1288,12 +1371,12 @@
             
             if(![fileManager fileExistsAtPath:filePath])
             {
-                NSMutableDictionary *dic = [[dataArray objectAtIndex:indexPath.row] mutableCopy];
+                NSMutableDictionary *dic = [[dataArray objectAtIndex:indexPath.row - 1] mutableCopy];
                 [dic setObject:[NSNumber numberWithFloat:0.0] forKey:@"receivedData"];
                 [dic setObject:[NSNumber numberWithFloat:0.0] forKey:@"progressive"];
                 [dataArray replaceObjectAtIndex:indexPath.row withObject:dic];
                 [tableView reloadData];
-                [appDelegate.downlaodArray addObject:[dataArray objectAtIndex:indexPath.row]];
+                [appDelegate.downlaodArray addObject:[dataArray objectAtIndex:indexPath.row - 1]];
                 [appDelegate.constant downloadWithNsurlconnection];
             }
             else
@@ -1313,7 +1396,7 @@
                     [audioPlayer prepareToPlay];
                     [audioPlayer play];
                     
-                    NSMutableDictionary *dic = [[dataArray objectAtIndex:indexPath.row] mutableCopy];
+                    NSMutableDictionary *dic = [[dataArray objectAtIndex:indexPath.row - 1] mutableCopy];
                     [dic setObject:[NSNumber numberWithFloat:0.0] forKey:@"progressivePlaying"];
                     [dataArray replaceObjectAtIndex:indexPath.row withObject:dic];
                     
@@ -1384,7 +1467,7 @@
     CGPoint hitPoint = [sender convertPoint:CGPointZero toView:self.tableView];
     NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint: hitPoint];
     
-    if ([[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] != nil && ![[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isKindOfClass:[NSNull class]] && ![[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@""])
+    if ([[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] != nil && ![[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isKindOfClass:[NSNull class]] && ![[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@""])
     {
         if([_from isEqualToString:@"new"])
         {
@@ -1392,23 +1475,23 @@
             MediaViewController *infoVC = [story instantiateViewControllerWithIdentifier:@"MediaViewController"];
             infoVC.filePath = nil;
             
-            if([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"image"])
+            if([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"image"])
             {
                 infoVC.from = @"image";
-                infoVC.data = [[dataArray objectAtIndex:indexPath.row] valueForKey:@"file"];
+                infoVC.data = [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file"];
             }
-            else if([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"file"])
+            else if([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"file"])
             {
-                NSString *fileName = [[dataArray objectAtIndex:indexPath.row] valueForKey:@"file_name"];
+                NSString *fileName = [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file_name"];
                 infoVC.from = @"document";
-                infoVC.data = [[dataArray objectAtIndex:indexPath.row] valueForKey:@"file"];
+                infoVC.data = [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file"];
                 infoVC.filePath = fileName;
             }
-            else  if([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"video"])
+            else  if([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"video"] || [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] containsString:@"video"])
             {
                 infoVC.from = @"video";
-                infoVC.data = [[dataArray objectAtIndex:indexPath.row] valueForKey:@"file"];
-                infoVC.filePath = nil;
+                infoVC.data = [[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file"];
+                infoVC.filePath = [[[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] componentsSeparatedByString:@"video_"] objectAtIndex:1];
             }
             [[self navigationController] pushViewController:infoVC animated:YES];
         }
@@ -1417,7 +1500,7 @@
             NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true);
             NSString *documentPath = [paths objectAtIndex:0];
             
-            NSArray *tempArr2 = [[NSArray alloc] initWithArray:[[[dataArray objectAtIndex:indexPath.row] valueForKey:@"file"] componentsSeparatedByString:@"/"]];
+            NSArray *tempArr2 = [[NSArray alloc] initWithArray:[[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"file"] componentsSeparatedByString:@"/"]];
             NSString *fileName = [tempArr2 objectAtIndex:[tempArr2 count] - 1];
             
             NSString *filePath = [NSString stringWithFormat:@"%@/%@",documentPath,fileName];
@@ -1425,12 +1508,12 @@
             
             if(![fileManager fileExistsAtPath:filePath])
             {
-                NSMutableDictionary *dic = [[dataArray objectAtIndex:indexPath.row] mutableCopy];
+                NSMutableDictionary *dic = [[dataArray objectAtIndex:indexPath.row - 1] mutableCopy];
                 [dic setObject:[NSNumber numberWithFloat:0.0] forKey:@"receivedData"];
                 [dic setObject:[NSNumber numberWithFloat:0.0] forKey:@"progressive"];
                 [dataArray replaceObjectAtIndex:indexPath.row withObject:dic];
                 [tableView reloadData];
-                [appDelegate.downlaodArray addObject:[dataArray objectAtIndex:indexPath.row]];
+                [appDelegate.downlaodArray addObject:[dataArray objectAtIndex:indexPath.row - 1]];
                 [appDelegate.constant downloadWithNsurlconnection];
             }
             else
@@ -1440,11 +1523,11 @@
                 infoVC.filePath = filePath;
                 infoVC.data = nil;
                 
-                if([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"image"])
+                if([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"image"])
                 {
                     infoVC.from = @"image";
                 }
-                else if(([[[dataArray objectAtIndex:indexPath.row] valueForKey:@"type"] isEqualToString:@"video"]))
+                else if(([[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] isEqualToString:@"video"]) || [[[dataArray objectAtIndex:indexPath.row - 1] valueForKey:@"type"] containsString:@"video_"])
                 {
                     infoVC.from = @"video";
                 }
@@ -1542,7 +1625,7 @@
         //        [dic setValue:[NSString stringWithFormat:@"video%@.mp4",[dateFormatter stringFromDate:[NSDate date]]] forKey:@"file_name"];
         //        [dic setValue:[dateFormatter stringFromDate:[NSDate date]] forKey:@"generated_at"];
         
-        [self addObjects:[NSData dataWithContentsOfURL:videoURL] typeofData:@"video" thumbImage:UIImageJPEGRepresentation(thumbnail, 0.5) timeofSelection:[NSString stringWithFormat:@"video%@.mp4",[dateFormatter stringFromDate:[NSDate date]]]];
+        [self addObjects:[NSData dataWithContentsOfURL:videoURL] typeofData:[NSString stringWithFormat:@"video_%@",videoURL] thumbImage:UIImageJPEGRepresentation(thumbnail, 0.5) timeofSelection:[NSString stringWithFormat:@"video%@.mp4",[dateFormatter stringFromDate:[NSDate date]]]];
         
         //        [dataArray addObject:dic];
         [self.tableView reloadData];
@@ -1606,7 +1689,8 @@
         [dic setValue:data forKey:@"file"];
         [dic setValue:duration forKey:@"file_name"];
     }
-    else if([type isEqualToString:@"video"])
+    
+    else if([type isEqualToString:@"video"] || [type containsString:@"video_"])
     {
         [dic setValue:data forKey:@"file"];
         [dic setValue:thumb forKeyPath:@"thumb"];
@@ -1658,8 +1742,10 @@
                 index = [NSIndexPath indexPathForItem:[[dataDic valueForKey:@"commentArray"] count] inSection:1];
                 
             }
-            
+            if ([[dataDic valueForKey:@"commentArray"] count] > 0 && [dataDic valueForKey:@"commentArray"] != nil)
+            {
             [self.tableView scrollToRowAtIndexPath:index atScrollPosition:UITableViewScrollPositionBottom animated:false];
+            }
             
         }
         else if([[responseObject valueForKey:@"response"] isEqualToString:@"error"] && [[NSString stringWithFormat:@"%@",[responseObject valueForKey:@"error_code"]] isEqualToString:@"401"])

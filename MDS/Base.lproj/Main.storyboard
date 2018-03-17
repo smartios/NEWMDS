@@ -1204,7 +1204,7 @@
                                                         <color key="titleColor" red="0.1764705882" green="0.1764705882" blue="0.1764705882" alpha="1" colorSpace="calibratedRGB"/>
                                                     </state>
                                                     <connections>
-                                                        <action selector="send:" destination="AfE-WK-Q9N" eventType="touchUpInside" id="Nj1-yi-3Lz"/>
+                                                        <action selector="draft:" destination="AfE-WK-Q9N" eventType="touchUpInside" id="lqx-TX-7vA"/>
                                                     </connections>
                                                 </button>
                                             </subviews>
@@ -3296,13 +3296,23 @@
                                                         <constraint firstAttribute="width" constant="150" id="lL9-5R-v6P"/>
                                                     </constraints>
                                                 </view>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BoW-ni-r6k">
+                                                    <rect key="frame" x="140" y="4" width="150" height="120"/>
+                                                    <connections>
+                                                        <action selector="mapImageTapped:" destination="geW-XE-XUX" eventType="touchUpInside" id="py9-ss-vm7"/>
+                                                    </connections>
+                                                </button>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="6Bp-0R-1K7" firstAttribute="top" secondItem="aHV-A6-phX" secondAttribute="bottom" constant="2" id="28T-3C-knd"/>
                                                 <constraint firstAttribute="bottom" secondItem="6Bp-0R-1K7" secondAttribute="bottom" constant="4" id="2DY-Fn-5dW"/>
                                                 <constraint firstItem="aHV-A6-phX" firstAttribute="top" secondItem="j4e-PW-Ym3" secondAttribute="top" constant="4" id="37i-wg-Lg9"/>
                                                 <constraint firstAttribute="trailing" secondItem="6Bp-0R-1K7" secondAttribute="trailing" constant="30" id="Aqu-XQ-S1S"/>
+                                                <constraint firstItem="BoW-ni-r6k" firstAttribute="centerY" secondItem="aHV-A6-phX" secondAttribute="centerY" id="BYo-Zb-Oqq"/>
                                                 <constraint firstAttribute="trailing" secondItem="aHV-A6-phX" secondAttribute="trailing" constant="30" id="JgC-mC-zAQ"/>
+                                                <constraint firstItem="BoW-ni-r6k" firstAttribute="height" secondItem="aHV-A6-phX" secondAttribute="height" id="bvK-Oo-egP"/>
+                                                <constraint firstItem="BoW-ni-r6k" firstAttribute="centerX" secondItem="aHV-A6-phX" secondAttribute="centerX" id="m3G-Oy-Fef"/>
+                                                <constraint firstItem="BoW-ni-r6k" firstAttribute="width" secondItem="aHV-A6-phX" secondAttribute="width" id="x2u-dL-vCV"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -4126,10 +4136,7 @@
                                                     </connections>
                                                 </button>
                                                 <button opaque="NO" tag="2" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Gy9-Rj-yyp">
-                                                    <rect key="frame" x="55" y="55" width="102" height="30"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="30" id="Bps-7T-PmF"/>
-                                                    </constraints>
+                                                    <rect key="frame" x="55" y="55" width="104" height="27"/>
                                                     <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="12"/>
                                                     <state key="normal" title="RESET PASSWORD">
                                                         <color key="titleColor" red="0.75294117650000003" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -4138,24 +4145,25 @@
                                                         <action selector="reset:" destination="UA7-ZG-y3y" eventType="touchUpInside" id="cSo-Dt-F8X"/>
                                                     </connections>
                                                 </button>
-                                                <button opaque="NO" tag="3" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6Og-SF-t7A">
-                                                    <rect key="frame" x="189" y="55" width="110" height="30"/>
+                                                <button opaque="NO" tag="3" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6Og-SF-t7A">
+                                                    <rect key="frame" x="161" y="55" width="104" height="27"/>
                                                     <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="12"/>
-                                                    <state key="normal" title="FORGET PASSWORD">
+                                                    <state key="normal" title="FORGOT PASSWORD">
                                                         <color key="titleColor" red="0.75294117650000003" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                                     </state>
                                                 </button>
                                             </subviews>
                                             <constraints>
+                                                <constraint firstItem="6Og-SF-t7A" firstAttribute="leading" secondItem="Gy9-Rj-yyp" secondAttribute="trailing" constant="2" id="1ba-Ec-Nee"/>
+                                                <constraint firstItem="Gy9-Rj-yyp" firstAttribute="height" secondItem="6Og-SF-t7A" secondAttribute="height" id="D5C-GR-dh9"/>
                                                 <constraint firstItem="bJu-Rt-CXQ" firstAttribute="top" secondItem="1Ce-Y6-s26" secondAttribute="top" constant="13" id="DS3-4T-z3j"/>
-                                                <constraint firstItem="Gy9-Rj-yyp" firstAttribute="top" secondItem="bJu-Rt-CXQ" secondAttribute="bottom" constant="6" id="DlG-OY-nlE"/>
-                                                <constraint firstItem="6Og-SF-t7A" firstAttribute="centerY" secondItem="Gy9-Rj-yyp" secondAttribute="centerY" id="EHQ-1X-Fmt"/>
-                                                <constraint firstAttribute="bottom" secondItem="6Og-SF-t7A" secondAttribute="bottom" constant="5" id="HiW-Ym-tfC"/>
-                                                <constraint firstItem="Gy9-Rj-yyp" firstAttribute="leading" secondItem="1Ce-Y6-s26" secondAttribute="leading" constant="55" id="O2A-Oe-npe"/>
-                                                <constraint firstAttribute="bottom" secondItem="Gy9-Rj-yyp" secondAttribute="bottom" constant="5" id="Pv6-c9-fTm"/>
+                                                <constraint firstItem="Gy9-Rj-yyp" firstAttribute="width" secondItem="6Og-SF-t7A" secondAttribute="width" id="GMG-Uk-Mjz"/>
+                                                <constraint firstItem="6Og-SF-t7A" firstAttribute="top" secondItem="bJu-Rt-CXQ" secondAttribute="bottom" constant="6" id="HNe-hL-oJY"/>
+                                                <constraint firstItem="Gy9-Rj-yyp" firstAttribute="top" secondItem="bJu-Rt-CXQ" secondAttribute="bottom" constant="6" id="SeG-Cy-l7T"/>
+                                                <constraint firstItem="6Og-SF-t7A" firstAttribute="trailing" secondItem="bJu-Rt-CXQ" secondAttribute="trailing" id="VHa-al-7zJ"/>
                                                 <constraint firstItem="bJu-Rt-CXQ" firstAttribute="leading" secondItem="1Ce-Y6-s26" secondAttribute="leading" constant="55" id="aCb-ah-DDm"/>
                                                 <constraint firstAttribute="trailing" secondItem="bJu-Rt-CXQ" secondAttribute="trailing" constant="55" id="cS1-oJ-rvd"/>
-                                                <constraint firstItem="6Og-SF-t7A" firstAttribute="leading" secondItem="Gy9-Rj-yyp" secondAttribute="trailing" constant="40" id="o9u-qq-Kue"/>
+                                                <constraint firstItem="Gy9-Rj-yyp" firstAttribute="leading" secondItem="bJu-Rt-CXQ" secondAttribute="leading" id="ysj-Ka-Iqg"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>

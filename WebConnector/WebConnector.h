@@ -19,7 +19,7 @@ typedef void (^CompleteBlock)(AFHTTPRequestOperation *operation, id responseObje
 typedef void (^ErrorBlock)(AFHTTPRequestOperation *operation, NSError *error);
 
 -(void)locationWebservice:(NSMutableDictionary *)params completionHandler:(CompleteBlock)completed errorHandler:(ErrorBlock)errorBlock;
-
+-(void)saveAsDraft_TR:(NSMutableDictionary *)params completionHandler:(CompleteBlock)completed errorHandler:(ErrorBlock)errorBlock;
 //TR Read
 -(void)TRRead:(NSMutableDictionary* )params url:(NSString* )urlget completionHandler:(CompleteBlock)completed errorHandler:(ErrorBlock)errorBlock;
 

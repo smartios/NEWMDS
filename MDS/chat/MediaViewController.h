@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 
-@interface MediaViewController : UIViewController
+@interface MediaViewController : UIViewController<UIWebViewDelegate>
 
 @property (strong, nonatomic) NSString *from;
 @property (strong, nonatomic) NSString *filePath;

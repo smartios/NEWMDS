@@ -51,8 +51,8 @@
         locationManager.distanceFilter = 500;
     }
     
-    [GMSPlacesClient provideAPIKey:@"AIzaSyDAxxLwZJOWkAWXDdvx58ZzoCQZlx6FPng"];
-    [GMSServices provideAPIKey:@"AIzaSyDAxxLwZJOWkAWXDdvx58ZzoCQZlx6FPng"];
+    [GMSPlacesClient provideAPIKey:@"AIzaSyDOCZEZBTWsVW_t2PHMcd3bBNbuVEfjx5w"];
+    [GMSServices provideAPIKey:@"AIzaSyDOCZEZBTWsVW_t2PHMcd3bBNbuVEfjx5w"];
     
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(checkNetworkStatus:) name:kReachabilityChangedNotification object:nil];
@@ -308,9 +308,9 @@
         }
         else if([[payload objectForKey:@"alert"] isEqualToString: @"new-ir"])
         {
-            if([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive && [[[SlideNavigationController sharedInstance] topViewController] isKindOfClass:[TRTabBarController class]])
+            if([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive && [[[SlideNavigationController sharedInstance] topViewController] isKindOfClass:[IRTabBarController class]])
             {
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"newTR" object:nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"newIR" object:nil];
             }
             else
             {
@@ -356,6 +356,7 @@
 {
     NSString *url = [NSString stringWithFormat:@"%@api/auth/status?token=%@", BaseURL,[[[NSUserDefaults standardUserDefaults] valueForKey:@"userData"] valueForKey:@"token"]];
     WebConnector *webConnector = [[WebConnector alloc] init];
+   
     NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
     dic = [[[[NSUserDefaults standardUserDefaults] valueForKey:@"userData"] valueForKey:@"users_details"] mutableCopy];
     
@@ -488,9 +489,5 @@
         //[SVProgressHUD showErrorWithStatus: @"Please try again."];
         
     }];
-    
-    
-    
 }
-
 @end

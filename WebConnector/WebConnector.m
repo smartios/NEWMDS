@@ -124,7 +124,7 @@
                 }
                 else  if([[[dic valueForKey:key] valueForKey:@"type"] isEqualToString:@"video"])
                 {
-                    [formData appendPartWithFileData:[[dic valueForKey:key] valueForKey:@"file"] name:[NSString stringWithFormat:@"%@[file]",key] fileName:@"image.jpg" mimeType:@"image/jpg"];
+                    [formData appendPartWithFileData:[[dic valueForKey:key] valueForKey:@"file"] name:[NSString stringWithFormat:@"%@[file]",key] fileName:@"video.mp4" mimeType:@"video/mp4"];
                     [formData appendPartWithFileData:[[dic valueForKey:key] valueForKey:@"thumb"] name:[NSString stringWithFormat:@"%@[thumb]",key] fileName:@"image_thumb.jpg" mimeType:@"image/jpg"];
                 }
             }
@@ -170,9 +170,33 @@
     } success:completed failure:errorBlock];
 }
 
-
+-(void)saveAsDraft_TR:(NSMutableDictionary *)params completionHandler:(CompleteBlock)completed errorHandler:(ErrorBlock)errorBlock
+{
+    
+    NSString *urlget = [NSString stringWithFormat:@"%@api/auth/update_tr?token=%@", BaseURL,[[[NSUserDefaults standardUserDefaults] objectForKey:@"userData"] valueForKey:@"token"]];
+    
+    [httpManager POST:urlget parameters:params constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+        
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"yyyy"];
+        NSString *yearString = [formatter stringFromDate:[NSDate date]];
+        
+        for(int i = 0; i< [[params valueForKey:@"tr_images"] count]; i ++){
+            [formData appendPartWithFileData:[[params valueForKey:@"tr_images"] objectAtIndex:i] name:[NSString stringWithFormat:@"images[%d][tr_images]",i] fileName:[NSString stringWithFormat:@"TR%d_%@.jpg", i, yearString] mimeType:@"image/jpg"];
+            [formData appendPartWithFileData:[[params valueForKey:@"tr_images_thumb"] objectAtIndex:i] name:[NSString stringWithFormat:@"images[%d][tr_images_thumb]",i] fileName:[NSString stringWithFormat:@"TR%d_%@_thumb.jpg", i, yearString] mimeType:@"image/jpg"];
+        }
+        
+        for(int i = 0; i< [[params valueForKey:@"tr_file"] count]; i ++){
+            
+            NSString *type = [[[params valueForKey:@"file_name_"] objectAtIndex:i] componentsSeparatedByString:@"."][1];
+            
+            [formData appendPartWithFileData:[[params valueForKey:@"tr_file"] objectAtIndex:i] name:[NSString stringWithFormat:@"tr_file[%d]",i] fileName:[[params valueForKey:@"file_name_"] objectAtIndex:i] mimeType:type];
+        }
+    } success:completed failure:errorBlock];
+}
 -(void)Login:(NSMutableDictionary *)params url:(NSString *)urlget completionHandler:(CompleteBlock)completed errorHandler:(ErrorBlock)errorBlock
 {
+    
     [httpManager POST:urlget parameters:params success:completed failure:errorBlock];
 }
 

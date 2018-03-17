@@ -10,6 +10,7 @@
 #import "SecureTRController.h"
 #import "CalendarView.h"
 #import "ContactsViewController.h"
+#import "NewScureTRControllerTableViewController.h"
 
 @interface MYTRViewController ()
 @end
@@ -328,6 +329,19 @@
 
 -(void)selectedTR:(NSDictionary *)dic ArrayOFData:(NSString *)str IndexTobeChanged:(NSIndexPath *)index
 {
+ 
+    if([[dic valueForKey:@"action"] isEqualToString:@"draft"])
+    {
+      
+      [self.tabBarController setSelectedIndex:1];
+        
+        NSArray *viewControllers = [self.tabBarController viewControllers];
+        NewScureTRControllerTableViewController *vc = viewControllers[1];
+        vc.dataDic = dic.mutableCopy;
+        
+        return;
+    }
+    
     
     if([dic valueForKey:@"tr_read_time"] != nil && [[NSString stringWithFormat:@"%@", [dic valueForKey:@"tr_read_time"]] isEqualToString:@"0000-00-00 00:00:00"] && [[dic valueForKey:@"action"] isEqualToString:@"my"] && ![[NSString stringWithFormat:@"%@", [dic valueForKey:@"destroy_time"]] isEqualToString:@"never"])
     {

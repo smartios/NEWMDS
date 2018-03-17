@@ -25,4 +25,6 @@
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *filterDateConst;
 @property (weak, nonatomic) IBOutlet UIButton *headerEditBtn;
 @property (weak, nonatomic) IBOutlet UIButton *headerExportBtn;
+@property (nonatomic, strong) NSMutableDictionary *dataDic;
+
 @end

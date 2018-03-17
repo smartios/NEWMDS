@@ -51,13 +51,14 @@ static NSString *imageBaseURL = @"http://mds.westixx.customer.hostsg.com/staging
 //messages for login & FP & RP
 static NSString *emptyEmail = @"Please enter email address.";
 static NSString *validEmail = @"Email address is invalid.";
+static NSString *PasswordEmpty = @"Please enter password.";
 static NSString *Emptypassword = @"Please enter new password.";
 static NSString *validPassword = @"The new password must contain one upper letter, one number and must contain at least 8 - 20 characters.";
 static NSString *currentEmptyPass = @"Please enter old password.";
 static NSString *confirmEmptyPass = @"Please enter confirm password.";
 static NSString *matchPassword = @"New Password and Confirm New Password doesn't match.";
 static NSString *Emptymessage = @"Please enter your message.";
-static NSString *trPermission = @"Access request has been sent to admin, device approval pending,please contact the admin for further information";
+static NSString *trPermission = @"Access request has been sent to admin. Device approval pending, please contact the admin for further information";
 
 
 //messages for editP

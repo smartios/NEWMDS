@@ -161,6 +161,9 @@
     else if (indexPath.row == num-2 && [_from isEqualToString:@"login"]){
         return 90;
     }
+    else if (indexPath.row == num-1 && [_from isEqualToString:@"reset"]){
+        return 90;
+    }
     else
     {
         return 75;
@@ -184,6 +187,8 @@
         [forgetPassWordBtn addTarget:self action:@selector(forgotPassword:)  forControlEvents:UIControlEventTouchUpInside];
         [reset setHidden:true];
         [forgetPassWordBtn setHidden:true];
+        reset.titleLabel.adjustsFontSizeToFitWidth = true;
+        forgetPassWordBtn.titleLabel.adjustsFontSizeToFitWidth = true;
         
         if([_from isEqualToString:@"login"])
         {
@@ -380,7 +385,7 @@
 
 - (IBAction)forgotPassword:(UIButton *)sender {
     UIAlertController * alertController = [UIAlertController alertControllerWithTitle: @"Forgot TR"
-                                                                              message: @"Click on send button to receive forget password email."
+                                                                              message: @"Click on send button to receive forgot password email."
                                                                        preferredStyle:UIAlertControllerStyleAlert];
     [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     [alertController addAction:[UIAlertAction actionWithTitle:@"Send" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
@@ -465,7 +470,7 @@
   else if ([_from isEqualToString:@"login"]) {
         if ([dataDic valueForKey:@"tr_password"] == nil || [[dataDic  valueForKey:@"tr_password"] isEqualToString:@""]) {
             
-            [SVProgressHUD showErrorWithStatus:Emptypassword];
+            [SVProgressHUD showErrorWithStatus:PasswordEmpty];
             return;
         }
     }

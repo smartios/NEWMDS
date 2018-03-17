@@ -10,6 +10,8 @@
 #import "UIImageView+AFNetworking.h"
 #import "CalendarView.h"
 #import "GroupMemberViewController.h"
+#import "MYTRViewController.h"
+#import "MediaViewController.h"
 
 @interface NewScureTRControllerTableViewController () 
 {
@@ -60,7 +62,10 @@
     return UIStatusBarStyleLightContent;
 }
 
-
+-(void)viewWillAppear:(BOOL)animated
+{
+    [self.tableView reloadData];
+}
 /**
  *  Keyboard did show fuction
  *
@@ -189,17 +194,38 @@
         UITextView *txtfld = [cell viewWithTag:2];
         UILabel *lbl = [cell viewWithTag:3];
         headLbl.text = @"MESSAGE";
+        txtfld.text = @"";
+        lbl.text =@"Enter message";
         
         if([dataDic valueForKey:@"tr_message"] != nil && ![[dataDic valueForKey:@"tr_message"] isEqualToString:@""])
         {
-            [lbl setHidden: true];
-            txtfld.text = [dataDic valueForKey:@"tr_message"];
+            
+            if([dataDic valueForKey:@"action"] != nil && [[dataDic valueForKey:@"action"] isEqualToString:@"draft"])
+            {
+                NSString *rawString = [dataDic valueForKey:@"tr_message"];
+                
+                NSArray *messageArr = [appDelegate.constant getMessageAndIV:rawString];
+                
+                NSString *decryptedString = [[appDelegate cryptoLib] decryptCipherTextWith:messageArr[0] key:encryptionKey iv:messageArr[1]];
+                
+                if(decryptedString != nil && ![decryptedString isEqualToString:@""])
+                {
+                    txtfld.text = [appDelegate.constant UTF8Message:decryptedString];
+                    lbl.text =@"";
+                }
+            }
+            else
+            {
+                if([dataDic valueForKey:@"tr_message"] != nil)
+                {
+                    txtfld.text = [dataDic valueForKey:@"tr_message"];
+                    lbl.text =@"";
+                }
+            }
+            
+           
         }
-        else
-        {
-            [lbl setHidden: false];
-            txtfld.text = @"";
-        }
+        
     }
     else if(indexPath.row == 2)
     {
@@ -209,29 +235,37 @@
         [txtfld  setEnabled:true];
         headLbl.text = @"TO";
         
+        
+        NSString *str = [[NSString alloc] init];
+        str = @"";
+        
         if([dataDic valueForKey:@"users_list"] != nil && [[dataDic valueForKey:@"users_list"] count] > 0)
         {
-            NSString *str = [[NSString alloc] init];
-            str = @"";
             for(int i=0; i<[[dataDic valueForKey:@"users_list"] count]; i++)
             {
-                if(i==0)
-                {
-                    str = [NSString stringWithFormat:@"%@",[[[dataDic valueForKey:@"users_list"] objectAtIndex:i] objectForKey:@"email"]];
-                }
-                else
-                {
                     str = [NSString stringWithFormat:@"%@, %@",str,[[[dataDic valueForKey:@"users_list"] objectAtIndex:i] objectForKey:@"email"]];
-                }
             }
-            
-            txtfld.font = [UIFont fontWithName:@"Roboto-Regular" size:17];
-            txtfld.text = str;
         }
-        else
+        
+        
+        
+        if([[dataDic valueForKey:@"action"] isEqualToString:@"draft"])
+        {
+            for(int i=0; i<[[dataDic valueForKey:@"user_to"] count]; i++)
+            {
+                    str = [NSString stringWithFormat:@"%@, %@",str,[[[dataDic valueForKey:@"user_to"] objectAtIndex:i] objectForKey:@"email"]];
+            }
+        }
+        
+        if([str isEqualToString:@""])
         {
             txtfld.text = @"Search User";
             txtfld.font = [UIFont fontWithName:@"Roboto-Light" size:14];
+        }
+        else
+        {
+            txtfld.font = [UIFont fontWithName:@"Roboto-Regular" size:17];
+            txtfld.text = str;
         }
     }
     else if(indexPath.row == 7 || indexPath.row == 8 || indexPath.row == 1)
@@ -248,9 +282,9 @@
             headLbl.text = @"SET ENCRYPTION PASSWORD";
             if([dataDic valueForKey:@"password"] != nil && ![[dataDic valueForKey:@"password"] isEqualToString:@""])
             {
-                txtfld.text = [dataDic valueForKey:@"password"];
+                txtfld.text = [dataDic valueForKey:@"tr_password"];
             }
-
+            
         }
         else if(indexPath.row == 8)
         {
@@ -265,7 +299,7 @@
         {
             headLbl.text = @"TITLE";
             [txtfld  setSecureTextEntry:false];
-//            txtfld.text
+            //            txtfld.text
             if([dataDic valueForKey:@"tr_title"] != nil && ![[dataDic valueForKey:@"tr_title"] isEqualToString:@""])
             {
                 txtfld.text = [dataDic valueForKey:@"tr_title"];
@@ -274,7 +308,7 @@
             {
                 
                 txtfld.placeholder = @"Enter title";
-
+                
             }
         }
     }
@@ -315,12 +349,12 @@
         UIFont *boldFont = [UIFont fontWithName:@"Roboto-Regular" size:16.0];
         NSRange range = [@"*SELF DESTROY AFTER " rangeOfString:@"*SELF DESTROY AFTER "];
         [string setAttributes:@{NSForegroundColorAttributeName: [UIColor blackColor],
-                                        NSFontAttributeName:boldFont} range:range];
+                                NSFontAttributeName:boldFont} range:range];
         
         UIFont *boldFont2 = [UIFont fontWithName:@"Roboto-Italic" size:14.0];
         NSRange range2 = [@"(TR destroyed DD:HH:MM after read)" rangeOfString:@"(TR destroyed DD:HH:MM after read)"];
         [string1 setAttributes:@{NSForegroundColorAttributeName: [UIColor blackColor],
-                                NSFontAttributeName:boldFont2} range:range2];
+                                 NSFontAttributeName:boldFont2} range:range2];
         
         
         
@@ -330,39 +364,98 @@
         }
         else
         {
-            [never setSelected:false];
-            
-            if([dataDic valueForKey:@"dd"] != nil)
-            {
-                [dd setTitle:[dataDic valueForKey:@"dd"] forState:UIControlStateNormal];
+            if([[dataDic valueForKey:@"action"] isEqualToString:@"draft"]){
+                
+                if([dataDic valueForKey:@"destroy_time"] != nil && ![[dataDic valueForKey:@"destroy_time"] isEqualToString:@""])
+                {
+                    NSString *time = [dataDic valueForKey:@"destroy_time"];
+                    [never setSelected:false];
+                    
+                    if([dataDic valueForKey:@"dd"] != nil)
+                    {
+                        [dd setTitle:[dataDic valueForKey:@"dd"] forState:UIControlStateNormal];
+                    }
+                    else
+                    {
+                    if([[time componentsSeparatedByString:@":"] count]>0)
+                    {
+                        [dd setTitle:[time componentsSeparatedByString:@":"][0] forState:UIControlStateNormal];
+                    }
+                    else
+                    {
+                        [dd setTitle:@"DD" forState:UIControlStateNormal];
+                    }
+                    }
+                    
+                    if([dataDic valueForKey:@"hh"] != nil)
+                    {
+                        [hh setTitle:[dataDic valueForKey:@"hh"] forState:UIControlStateNormal];
+                    }
+                    else
+                    {
+                    if([[time componentsSeparatedByString:@":"] count]>1)
+                    {
+                        [hh setTitle:[time componentsSeparatedByString:@":"][1] forState:UIControlStateNormal];
+                    }
+                    else
+                    {
+                        [hh setTitle:@"HH" forState:UIControlStateNormal];
+                    }
+                    }
+                    
+                    if([dataDic valueForKey:@"mm"] != nil)
+                    {
+                        [mm setTitle:[dataDic valueForKey:@"mm"] forState:UIControlStateNormal];
+                    }
+                    else
+                    {
+                    if([[time componentsSeparatedByString:@":"] count]>2)
+                    {
+                        [mm setTitle:[time componentsSeparatedByString:@":"][2] forState:UIControlStateNormal];
+                    }
+                    else
+                    {
+                        [mm setTitle:@"MM" forState:UIControlStateNormal];
+                    }
+                    }
+                }
+                
+
             }
             else
             {
-                [dd setTitle:@"DD" forState:UIControlStateNormal];
+                if([dataDic valueForKey:@"dd"] != nil)
+                {
+                    [dd setTitle:[dataDic valueForKey:@"dd"] forState:UIControlStateNormal];
+                }
+                else
+                {
+                    [dd setTitle:@"DD" forState:UIControlStateNormal];
+                }
+                
+                if([dataDic valueForKey:@"hh"] != nil)
+                {
+                    [hh setTitle:[dataDic valueForKey:@"hh"] forState:UIControlStateNormal];
+                }
+                else
+                {
+                    [hh setTitle:@"HH" forState:UIControlStateNormal];
+                }
+                
+                if([dataDic valueForKey:@"mm"] != nil)
+                {
+                    [mm setTitle:[dataDic valueForKey:@"mm"] forState:UIControlStateNormal];
+                }
+                else
+                {
+                    [mm setTitle:@"MM" forState:UIControlStateNormal];
+                }
             }
-            
-            if([dataDic valueForKey:@"hh"] != nil)
-            {
-                [hh setTitle:[dataDic valueForKey:@"hh"] forState:UIControlStateNormal];
-            }
-            else
-            {
-                [hh setTitle:@"HH" forState:UIControlStateNormal];
-            }
-            
-            if([dataDic valueForKey:@"mm"] != nil)
-            {
-                [mm setTitle:[dataDic valueForKey:@"mm"] forState:UIControlStateNormal];
-            }
-            else
-            {
-                [mm setTitle:@"MM" forState:UIControlStateNormal];
-            }
-        }
+                    }
         
         [string appendAttributedString:string1];
         [headlbl setAttributedText:string];
-         //headlbl.attributedText = string;
+        //headlbl.attributedText = string;
         headlbl.adjustsFontSizeToFitWidth = true;
         
     }
@@ -392,7 +485,7 @@
         if([dataDic valueForKey:@"users_list" ] != nil)
         {
             vc.selectedDataArray = [dataDic valueForKey:@"users_list"];
-        //    [vc.prevDataDic setValue:[dataDic valueForKey:@"users_list"] forKey:@"users_list"];
+            //    [vc.prevDataDic setValue:[dataDic valueForKey:@"users_list"] forKey:@"users_list"];
         }
         
         vc.delegate = self;
@@ -408,9 +501,9 @@
     {
         return [[dataDic valueForKey:@"images"] count]+1;
     }
-    else if([collectionView.restorationIdentifier isEqualToString:@"tr_file"] && [dataDic valueForKey:@"file"] != nil && [[dataDic valueForKey:@"file"] count] > 0)
+    else if([collectionView.restorationIdentifier isEqualToString:@"tr_file"] && [dataDic valueForKey:@"files"] != nil && [[dataDic valueForKey:@"files"] count] > 0)
     {
-        return [[dataDic valueForKey:@"file"] count]+1;
+        return [[dataDic valueForKey:@"files"] count]+1;
     }
     
     return 1;
@@ -436,56 +529,78 @@
         }
         else
         {
-            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-            [formatter setDateFormat:@"yyyy"];
-            NSString *yearString = [formatter stringFromDate:[NSDate date]];
-            
-            [image setImage:[UIImage imageWithData:[[dataDic valueForKey:@"images"] objectAtIndex:indexPath.row]]];
-            lbl.text = [NSString stringWithFormat:@"TR%ld_%@.jpg", indexPath.row + 1, yearString];
-            
-            if([[NSString stringWithFormat:@"%@", [[dataDic valueForKey:@"tr_images_selected"] objectAtIndex:indexPath.row]] isEqualToString:@"1"])
+            if([[[dataDic valueForKey:@"images"] objectAtIndex:indexPath.row] isKindOfClass:[NSData class]])
             {
-                [img setHidden:false];
+                NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                [formatter setDateFormat:@"yyyy"];
+                NSString *yearString = [formatter stringFromDate:[NSDate date]];
+                
+                [image setImage:[UIImage imageWithData:[[dataDic valueForKey:@"images"] objectAtIndex:indexPath.row]]];
+                lbl.text = [NSString stringWithFormat:@"TR%ld_%@.jpg", indexPath.row + 1, yearString];
+                
+                if([[NSString stringWithFormat:@"%@", [[dataDic valueForKey:@"tr_images_selected"] objectAtIndex:indexPath.row]] isEqualToString:@"1"])
+                {
+                    [img setHidden:false];
+                }
             }
             else
             {
-                [img setHidden:true];
+                for(int i=0; i<[[dataDic valueForKey:@"images"] count]; i++)
+                {
+                    NSURL *url = [NSURL URLWithString: [NSString stringWithFormat:@"%@", [[[dataDic valueForKey:@"images"]objectAtIndex: i]                                                                                         valueForKey:@"files"]]];
+                    [image setImageWithURL:url placeholderImage:[UIImage imageNamed:@"image_default"]];
+                    [img setHidden:true];
+                }
             }
         }
-        
     }
     else if([collectionView.restorationIdentifier isEqualToString:@"tr_file"])
     {
         lbl.text = @"";
         
-        if([dataDic valueForKey:@"file"] == nil || indexPath.row == [[dataDic valueForKey:@"file"] count])
+        if([dataDic valueForKey:@"files"] == nil || indexPath.row == [[dataDic valueForKey:@"files"] count])
         {
             [image setImage: [UIImage imageNamed: @"addFile"]];
         }
         else
         {
-            NSString *name = [NSString stringWithFormat:@"%@", [[dataDic valueForKey:@"file_name"] objectAtIndex:indexPath.row]];
-            
-            if([name containsString:@"pdf"])
+            if([[UIImage imageWithData:[[dataDic valueForKey:@"file"] objectAtIndex:indexPath.row]] isKindOfClass:[NSData data]])
             {
-                [image setImage:[UIImage imageNamed:@"pdf"]];
+                NSString *name = [NSString stringWithFormat:@"%@", [[dataDic valueForKey:@"file_name"] objectAtIndex:indexPath.row]];
+                
+                if([name containsString:@"pdf"])
+                {
+                    [image setImage:[UIImage imageNamed:@"pdf"]];
+                }
+                else
+                {
+                    [image setImage:[UIImage imageNamed:@"file_default"]];
+                }
+                
+                if([[NSString stringWithFormat:@"%@", [[dataDic valueForKey:@"tr_files_selected"] objectAtIndex:indexPath.row]] isEqualToString:@"1"])
+                {
+                    [img setHidden:false];
+                }
+                else
+                {
+                    [img setHidden:true];
+                }
+                
+                lbl.text = name;
             }
             else
             {
-                [image setImage:[UIImage imageNamed:@"file_default"]];
+                
+                for(int i=0; i<[[dataDic valueForKey:@"files"] count]; i++)
+                {
+                    NSURL *url = [NSURL URLWithString: [NSString stringWithFormat:@"%@", [[[dataDic valueForKey:@"files"]objectAtIndex: i]                                                                                         valueForKey:@"files"]]];
+                    
+                    [image setImage:[UIImage imageNamed:@"pdf"]];
+                    [img setHidden:true];
+                }
             }
-            
-            if([[NSString stringWithFormat:@"%@", [[dataDic valueForKey:@"tr_files_selected"] objectAtIndex:indexPath.row]] isEqualToString:@"1"])
-            {
-                [img setHidden:false];
-            }
-            else
-            {
-                [img setHidden:true];
-            }
-            
-            lbl.text = name;
         }
+        
     }
     
     lbl.adjustsFontSizeToFitWidth = true;
@@ -495,6 +610,8 @@
 
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    UIStoryboard *story = [UIStoryboard storyboardWithName:@"Main2" bundle:nil];
+    MediaViewController *infoVC = [story instantiateViewControllerWithIdentifier:@"MediaViewController"];
     
     if([collectionView.restorationIdentifier isEqualToString:@"tr_images"])
     {
@@ -530,27 +647,39 @@
         }
         else
         {
-            NSMutableArray *arr = [dataDic valueForKey:@"tr_images_selected"];
-            UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-            UIImageView *img = [cell viewWithTag:5];
             
-            if([[arr objectAtIndex:indexPath.row] isEqualToString:@"1"])
-            {
-                [arr replaceObjectAtIndex:indexPath.row withObject:@"0"];
-                [img setHidden:true];
+            if([[dataDic valueForKey:@"action"] isEqualToString:@"draft"]){
+                
+                infoVC.filePath = [NSString stringWithFormat:@"%@", [[[dataDic valueForKey:@"images"]objectAtIndex: indexPath.row]                                                                                         valueForKey:@"files"]];
+                infoVC.data = nil;
+                infoVC.from = @"image";
+                [[self navigationController] pushViewController:infoVC animated:YES];
+                
             }
-            else
-            {
-                [img setHidden:false];
-                [arr replaceObjectAtIndex:indexPath.row withObject:@"1"];
+            else{
+                NSMutableArray *arr = [dataDic valueForKey:@"tr_images_selected"];
+                UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
+                UIImageView *img = [cell viewWithTag:5];
+                
+                if([[arr objectAtIndex:indexPath.row] isEqualToString:@"1"])
+                {
+                    [arr replaceObjectAtIndex:indexPath.row withObject:@"0"];
+                    [img setHidden:true];
+                }
+                else
+                {
+                    [img setHidden:false];
+                    [arr replaceObjectAtIndex:indexPath.row withObject:@"1"];
+                }
+                
+                [dataDic setValue:arr forKey:@"tr_images_selected"];
             }
             
-            [dataDic setValue:arr forKey:@"tr_images_selected"];
         }
     }
     else if([collectionView.restorationIdentifier isEqualToString:@"tr_file"])
     {
-        if([dataDic valueForKey:@"file"] == nil || (indexPath.row == [[dataDic valueForKey:@"file"] count]))
+        if([dataDic valueForKey:@"files"] == nil || (indexPath.row == [[dataDic valueForKey:@"files"] count]))
         {
             UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:@"" preferredStyle:UIAlertControllerStyleActionSheet];
             
@@ -591,7 +720,7 @@
                                                    }
                                                    else
                                                    {
-                                                    //   NSLog(@"INVALID URL!!!");
+                                                       //   NSLog(@"INVALID URL!!!");
                                                    }
                                                    
                                                    
@@ -612,21 +741,34 @@
         }
         else
         {
-            UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-            UIImageView *img = [cell viewWithTag:5];
-            NSMutableArray *arr = [dataDic valueForKey:@"tr_files_selected"];
-            
-            if([[NSString stringWithFormat:@"%@", [arr objectAtIndex:indexPath.row]] isEqualToString:@"1"])
-            {
-                [img setHidden:true];
-                [arr replaceObjectAtIndex:indexPath.row withObject:@"0"];
+            if([[dataDic valueForKey:@"action"] isEqualToString:@"draft"]){
+                //
+                //            NSURL *url = [NSURL URLWithString: [NSString stringWithFormat:@"%@", [[[dataDic valueForKey:@"files"]objectAtIndex: indexPath.row]                                                                                         valueForKey:@"files"]]];
+                infoVC.filePath = [NSString stringWithFormat:@"%@", [[[dataDic valueForKey:@"files"]objectAtIndex: indexPath.row]                                                                                         valueForKey:@"files"]];
+                infoVC.data = nil;
+                infoVC.from = @"document";
+                [[self navigationController] pushViewController:infoVC animated:YES];
+                
+                
             }
             else
             {
-                [img setHidden:false];
-                [arr replaceObjectAtIndex:indexPath.row withObject:@"1"];
+                UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
+                UIImageView *img = [cell viewWithTag:5];
+                NSMutableArray *arr = [dataDic valueForKey:@"tr_files_selected"];
+                
+                if([[NSString stringWithFormat:@"%@", [arr objectAtIndex:indexPath.row]] isEqualToString:@"1"])
+                {
+                    [img setHidden:true];
+                    [arr replaceObjectAtIndex:indexPath.row withObject:@"0"];
+                }
+                else
+                {
+                    [img setHidden:false];
+                    [arr replaceObjectAtIndex:indexPath.row withObject:@"1"];
+                }
+                [dataDic setValue:arr forKey:@"tr_files_selected"];
             }
-            [dataDic setValue:arr forKey:@"tr_files_selected"];
         }
     }
 }
@@ -644,20 +786,20 @@
     
     if(indexPath.row == 1)
     {
-         textField.returnKeyType = UIReturnKeyDone;
+        textField.returnKeyType = UIReturnKeyDone;
     }
     else
-    if(indexPath.row == 7 || indexPath.row == 8)
-    {
-        
-        [textField setSecureTextEntry:true];
-        textField.returnKeyType = UIReturnKeyNext;
-        
-        if(indexPath.row == 8)
+        if(indexPath.row == 7 || indexPath.row == 8)
         {
-            textField.returnKeyType = UIReturnKeyDone;
+            
+            [textField setSecureTextEntry:true];
+            textField.returnKeyType = UIReturnKeyNext;
+            
+            if(indexPath.row == 8)
+            {
+                textField.returnKeyType = UIReturnKeyDone;
+            }
         }
-    }
 }
 
 -(void)textFieldDidEndEditing:(UITextField *)textField
@@ -833,7 +975,7 @@ numberOfRowsInComponent:(NSInteger)component {
         }
         else
         {
-       //     NSLog(@"INVALID URL!!!");
+            //     NSLog(@"INVALID URL!!!");
         }
     }
 }
@@ -843,8 +985,6 @@ numberOfRowsInComponent:(NSInteger)component {
 
 -(void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
-   
-    
     [self dismissViewControllerAnimated:YES completion:nil];
     UIImage *profilePic = [info valueForKey:UIImagePickerControllerOriginalImage];
     NSData *profile = UIImageJPEGRepresentation(profilePic, 0.6);
@@ -899,6 +1039,7 @@ numberOfRowsInComponent:(NSInteger)component {
 -(IBAction) send: (UIButton*) sender
 {
     [self.view endEditing:true];
+    
     if([dataDic valueForKey:@"date"] == nil)
     {
         [SVProgressHUD showErrorWithStatus:emptyDate];
@@ -953,10 +1094,20 @@ numberOfRowsInComponent:(NSInteger)component {
     
     
     NSMutableDictionary *params= [[NSMutableDictionary alloc] init];
-    [params setValue:[dataDic valueForKey:@"confirm_password"] forKey:@"confirm_password"];
-    [params setValue:[dataDic valueForKey:@"tr_title"] forKey:@"tr_title"];
-    [params setValue:[dataDic valueForKey:@"password"] forKey:@"password"];
-    [params setValue:[appDelegate.constant generateMessage:[dataDic valueForKey:@"tr_message"]] forKey:@"tr_message"];
+    if([dataDic valueForKey:@"confirm_password"] != nil){
+        [params setValue:[dataDic valueForKey:@"confirm_password"] forKey:@"confirm_password"];
+    }
+    if([dataDic valueForKey:@"tr_title"] != nil){
+        [params setValue:[dataDic valueForKey:@"tr_title"] forKey:@"tr_title"];
+    }
+    if([dataDic valueForKey:@"password"] != nil){
+        [params setValue:[dataDic valueForKey:@"password"] forKey:@"password"];
+    }
+    if([dataDic valueForKey:@"tr_message"] != nil){
+        [params setValue:[appDelegate.constant generateMessage:[dataDic valueForKey:@"tr_message"]] forKey:@"tr_message"];
+    }
+    
+    
     [params setValue:[[[[NSUserDefaults standardUserDefaults] valueForKey:@"userData"]valueForKey:@"users_details"] valueForKey:@"user_id"] forKey:@"user_id"];
     
     //to send as draft or not
@@ -998,15 +1149,15 @@ numberOfRowsInComponent:(NSInteger)component {
     {
         
         [params setValue:@"never" forKey:@"destroy_time"];
-//        if([dataDic valueForKey:@"destroy_time"] != nil)
-//        {
-//            [dataDic removeObjectForKey:@"destroy_time"];
-//        }
+        //        if([dataDic valueForKey:@"destroy_time"] != nil)
+        //        {
+        //            [dataDic removeObjectForKey:@"destroy_time"];
+        //        }
     }
     else
     {
         NSString *str = [[NSString alloc] init];
-
+        
         if([dataDic valueForKey:@"dd"] != nil)
         {
             str = [NSString stringWithFormat:@"%@", [dataDic valueForKey:@"dd"]];
@@ -1033,7 +1184,7 @@ numberOfRowsInComponent:(NSInteger)component {
         {
             str = [NSString stringWithFormat:@"%@:%@",str, @"00"];
         }
-       
+        
         [params setValue:str forKey:@"destroy_time"];
     }
     
@@ -1070,6 +1221,184 @@ numberOfRowsInComponent:(NSInteger)component {
     [self webservice:params];
 }
 
+
+-(IBAction) draft: (UIButton*) sender{
+    
+    [self.view endEditing:true];
+    NSMutableDictionary *params= [[NSMutableDictionary alloc] init];
+    [params setValue:@"1" forKey:@"draft"];
+    if([dataDic valueForKey:@"tr_title"] == nil || [[dataDic valueForKey:@"tr_title"] isEqualToString:@""])
+    {
+        [SVProgressHUD showErrorWithStatus:emptyTitle];
+        return;
+    }
+    else if([dataDic valueForKey:@"password"] == nil || [[dataDic valueForKey:@"password"] isEqualToString:@""])
+    {
+        [SVProgressHUD showErrorWithStatus:emptypassword];
+        return;
+    }
+    else if([appDelegate.constant passwordValidation:[dataDic valueForKey:@"password"]] == false)
+    {
+        [SVProgressHUD showErrorWithStatus:validPassword];
+        return;
+    }
+    else if([dataDic valueForKey:@"confirm_password"] == nil || [[dataDic valueForKey:@"confirm_password"] isEqualToString:@""])
+    {
+        [SVProgressHUD showErrorWithStatus:emptyCPassword];
+        return;
+    }
+    else if(![[dataDic valueForKey:@"confirm_password"] isEqualToString:[dataDic valueForKey:@"password"]])
+    {
+        [SVProgressHUD showErrorWithStatus:matchTRPassword];
+        return;
+    }
+    
+    
+    if([dataDic valueForKey:@"confirm_password"] != nil){
+        [params setValue:[dataDic valueForKey:@"confirm_password"] forKey:@"confirm_password"];
+    }
+    if([dataDic valueForKey:@"tr_title"] != nil){
+        [params setValue:[dataDic valueForKey:@"tr_title"] forKey:@"tr_title"];
+    }
+    if([dataDic valueForKey:@"password"] != nil){
+        [params setValue:[dataDic valueForKey:@"password"] forKey:@"password"];
+    }
+    if([dataDic valueForKey:@"tr_message"] != nil){
+        
+        if([dataDic valueForKey:@"action"] != nil && [[dataDic valueForKey:@"action"] isEqualToString:@"draft"])
+        {
+            [params setValue:[dataDic valueForKey:@"tr_message"] forKey:@"tr_message"];
+        }
+        else
+        {
+            [params setValue:[appDelegate.constant generateMessage:[dataDic valueForKey:@"tr_message"]] forKey:@"tr_message"];
+        }
+        
+       
+    }
+    
+    
+    [params setValue:[[[[NSUserDefaults standardUserDefaults] valueForKey:@"userData"]valueForKey:@"users_details"] valueForKey:@"user_id"] forKey:@"user_id"];
+    
+    
+    
+    
+    //tr_post_date
+    NSDateFormatter *df = [[NSDateFormatter alloc] init];
+    [df setDateFormat:@"dd/MM/yyyy"];
+    
+    NSDateFormatter *df1 = [[NSDateFormatter alloc] init];
+    [df1 setDateFormat:@"yyyy-MM-dd"];
+    
+    NSDateFormatter *df2 = [[NSDateFormatter alloc] init];
+    [df2 setDateFormat:@"dd/MM/yyyy HH:mm"];
+    
+    NSDateFormatter *df3 = [[NSDateFormatter alloc] init];
+    [df3 setDateFormat:@"HH:mm"];
+    
+    [params setValue:[NSString stringWithFormat:@"%@ %@", [df1 stringFromDate:[df dateFromString:[dataDic valueForKey:@"date"]]], [df3 stringFromDate:[df2 dateFromString:[dataDic valueForKey:@"time"]]]] forKey:@"tr_post_time"];
+    
+    //user id
+    NSMutableArray *user = [[NSMutableArray alloc] init];
+    if ([dataDic valueForKey:@"users_list"] != nil){
+        for(int i = 0;i<[[dataDic valueForKey:@"users_list"] count]; i++)
+        {
+            [user addObject:[NSString stringWithFormat:@"%@", [[[dataDic valueForKey:@"users_list"] objectAtIndex:i] valueForKey:@"id"]]];
+        }
+    }
+    [params setValue:user forKey:@"recieptent"];
+    
+    //destroy time
+    if([dataDic valueForKey:@"never"] != nil)
+    {
+        
+        [params setValue:@"never" forKey:@"destroy_time"];
+        //        if([dataDic valueForKey:@"destroy_time"] != nil)
+        //        {
+        //            [dataDic removeObjectForKey:@"destroy_time"];
+        //        }
+    }
+    else
+    {
+        NSString *str = [[NSString alloc] init];
+        
+        if([dataDic valueForKey:@"dd"] != nil)
+        {
+            str = [NSString stringWithFormat:@"%@", [dataDic valueForKey:@"dd"]];
+        }
+        else
+        {
+            str = @"00";
+        }
+        
+        if([dataDic valueForKey:@"hh"] != nil)
+        {
+            str = [NSString stringWithFormat:@"%@:%@",str, [dataDic valueForKey:@"hh"]];
+        }
+        else
+        {
+            str = [NSString stringWithFormat:@"%@:%@",str, @"00"];
+        }
+        
+        if([dataDic valueForKey:@"mm"] != nil)
+        {
+            str = [NSString stringWithFormat:@"%@:%@",str, [dataDic valueForKey:@"mm"]];
+        }
+        else
+        {
+            str = [NSString stringWithFormat:@"%@:%@",str, @"00"];
+        }
+        
+        [params setValue:str forKey:@"destroy_time"];
+    }
+    
+    //image clear
+    NSMutableArray *images = [[NSMutableArray alloc] init];
+    NSMutableArray *thumb = [[NSMutableArray alloc] init];
+    if([dataDic valueForKey:@"tr_images_selected"] != nil){
+        for(int i=0;i< [[dataDic valueForKey:@"tr_images_selected"] count];i++)
+        {
+            if([[[dataDic valueForKey:@"tr_images_selected"] objectAtIndex:i] isEqualToString:@"1"])
+            {
+                [images addObject:[[dataDic valueForKey:@"images"] objectAtIndex:i]];
+                [thumb addObject:[[dataDic valueForKey:@"tr_images_thumb"] objectAtIndex:i]];
+            }
+        }
+    }
+    [params setObject:images forKey:@"tr_images"];
+    [params setObject:thumb forKey:@"tr_images_thumb"];
+    
+    
+    //file clear
+    NSMutableArray *files = [[NSMutableArray alloc] init];
+    NSMutableArray *name = [[NSMutableArray alloc] init];
+    if([dataDic valueForKey:@"tr_files_selected"] != nil){
+        for(int i=0;i< [[dataDic valueForKey:@"tr_files_selected"] count];i++)
+        {
+            if([[[dataDic valueForKey:@"tr_files_selected"] objectAtIndex:i] isEqualToString:@"1"])
+            {
+                [files addObject:[[dataDic valueForKey:@"file"] objectAtIndex:i]];
+                [name addObject:[[dataDic valueForKey:@"file_name"] objectAtIndex:i]];
+            }
+        }
+    }
+    [params setObject:files forKey:@"tr_file"];
+    [params setObject:name forKey:@"file_name_"];
+   
+    if([dataDic objectForKey:@"id"] != nil)
+    {
+        [params setObject:[dataDic objectForKey:@"id"] forKey:@"id_tr"];
+        
+        [self draftWebservice:params];
+    }
+    else{
+        [self webservice:params];
+    }
+}
+
+
+
+
 -(IBAction) neverBtn: (UIButton*) sender
 {
     CGPoint hitPoint = [sender convertPoint:CGPointZero toView:self.tableView];
@@ -1082,7 +1411,7 @@ numberOfRowsInComponent:(NSInteger)component {
     }
     else
     {
-     //   UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        //   UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
         //        UIButton *dd = [cell viewWithTag:2];
         //        UIButton *hh = [cell viewWithTag:3];
         //        UIButton *mm = [cell viewWithTag:4];
@@ -1154,7 +1483,7 @@ numberOfRowsInComponent:(NSInteger)component {
     {
         calView.datePicker.datePickerMode = UIDatePickerModeDate;
         calView.datePicker.minimumDate = [NSDate date];
-
+        
         NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
         [calView.datePicker setLocale:locale];
         if([dataDic valueForKey:@"date"] == nil)
@@ -1245,8 +1574,8 @@ numberOfRowsInComponent:(NSInteger)component {
     else if(calView.tag == 4)
     {
         [dateFormatter setDateFormat:@"dd/MM/yyyy HH:mm"];
-//        NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
-//        [calView.datePicker setLocale:locale];
+        //        NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
+        //        [calView.datePicker setLocale:locale];
         NSString *dat = [dateFormatter stringFromDate: calView.datePicker.date];
         [dataDic setValue:dat forKey:@"time"];
     }
@@ -1281,9 +1610,22 @@ numberOfRowsInComponent:(NSInteger)component {
             [SVProgressHUD showSuccessWithStatus:[responseObject valueForKey:@"message"]];
             [dataDic removeAllObjects];
             [self.tableView reloadData];
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^(void){
-                [self.tabBarController setSelectedIndex:0];
-            });
+            
+            if ([[params valueForKey:@"draft"]  isEqual: @"1"]) {
+                
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^(void){
+                    [self.tabBarController setSelectedIndex:3];
+                });
+            }
+            else
+            {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^(void){
+                    [self.tabBarController setSelectedIndex:0];
+                });
+            }
+            
+            
+            
         }
         else if([[responseObject valueForKey:@"response"] isEqualToString:@"error"] && [[NSString stringWithFormat:@"%@",[responseObject valueForKey:@"error_code"]] isEqualToString:@"401"])
         {
@@ -1313,5 +1655,74 @@ numberOfRowsInComponent:(NSInteger)component {
         [SVProgressHUD showErrorWithStatus:@"Please try again."];
     }];
 }
+-(void)draftWebservice:(NSMutableDictionary *)params
+{
+    [SVProgressHUD dismiss];
+    
+    if (![appDelegate hasConnectivity]) {
+        
+        [SVProgressHUD showErrorWithStatus: @"No Internet Connection."];
+        return;
+    }
+    [SVProgressHUD showWithStatus:@"Please Wait"];
+    
+    WebConnector *webconnector = [[WebConnector alloc] init];
+    [webconnector saveAsDraft_TR:params completionHandler:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        if([[responseObject valueForKey:@"response"] isEqualToString:@"success"])
+        {
+            [SVProgressHUD dismiss];
+            [SVProgressHUD showSuccessWithStatus:[responseObject valueForKey:@"message"]];
+            [dataDic removeAllObjects];
+            [self.tableView reloadData];
+            
+            if ([[params valueForKey:@"draft"]  isEqual: @"1"]) {
+                
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^(void){
+                    [self.tabBarController setSelectedIndex:3];
+                });
+            }
+            else
+            {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^(void){
+                    [self.tabBarController setSelectedIndex:0];
+                });
+            }
+            
+            
+            
+        }
+        else if([[responseObject valueForKey:@"response"] isEqualToString:@"error"] && [[NSString stringWithFormat:@"%@",[responseObject valueForKey:@"error_code"]] isEqualToString:@"401"])
+        {
+            [webconnector refreshAccessToken:^(AFHTTPRequestOperation *operation, id responseObject) {
+                if([[responseObject valueForKey:@"response"] isEqualToString:@"success"])
+                {
+                    NSMutableDictionary *dic = [[[NSUserDefaults standardUserDefaults] valueForKey:@"userData"] mutableCopy];
+                    [dic setValue:[[responseObject valueForKey:@"result"] valueForKey:@"token"] forKey:@"token"];
+                    [[NSUserDefaults standardUserDefaults] setValue:dic forKey:@"userData"];
+                    
+                    [self webservice:params];
+                }
+            } errorHandler:^(AFHTTPRequestOperation *operation, NSError *error) {
+                [SVProgressHUD showErrorWithStatus:[responseObject valueForKey:@"message"]];
+            }];
+        }
+        else if([[responseObject valueForKey:@"response"] isEqualToString:@"error"] && [[NSString stringWithFormat:@"%@",[responseObject valueForKey:@"error_code"]] isEqualToString:@"402"])
+        {
+            [appDelegate.constant logoutFromApp];
+        }
+        else
+        {
+            [SVProgressHUD showErrorWithStatus:[responseObject valueForKey:@"message"]];
+        }
+    } errorHandler:^(AFHTTPRequestOperation *operation, NSError *error) {
+        [SVProgressHUD dismiss];
+        [SVProgressHUD showErrorWithStatus:@"Please try again."];
+    }];}
+
+
+
+
+
 
 @end

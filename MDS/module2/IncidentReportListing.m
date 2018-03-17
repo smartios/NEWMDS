@@ -9,7 +9,7 @@
 #import "IncidentReportListing.h"
 #import "NewIRViewController.h"
 #import "CalendarView.h"
-
+#import "MYTRViewController.h"
 @interface IncidentReportListing ()
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UILabel *selectedNoOfRows;
@@ -37,6 +37,12 @@
     arar = [[NSMutableArray alloc] init];
     dataDic = [[NSMutableDictionary alloc] init];
     boolSelect = false;
+    
+    if([from isEqualToString:@"my"])
+    {
+        [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(newIRWebservice) name: @"newIR" object: nil];
+    }
+    
     UITextField *textField = [_searchBar valueForKey:@"_searchField"];
     textField.clearButtonMode = UITextFieldViewModeNever;
     [dataDic setValue:@"10" forKey:@"limit"];
@@ -48,6 +54,18 @@
     // Do any additional setup after loading the view.
 }
 
+-(void)newIRWebservice
+{
+    if([self.tabBarController selectedIndex] != 0)
+    {
+        [dataDic setValue:@"10" forKey:@"limit"];
+        [self listingWebService:false];
+    }
+    else
+    {
+        [self callWebservice];
+    }
+}
 
 -(void)callWebservice
 {
@@ -228,7 +246,7 @@
         return;
     }
     [self.tableView reloadData];
-}
+};
 
 - (IBAction)okButton:(UIButton *)senter
 {
@@ -334,23 +352,47 @@
     [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     [alertController addAction:[UIAlertAction actionWithTitle:@"Sure" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         
-        if([[_tableView indexPathsForSelectedRows] count]>0){
+        
+        UIAlertController * alertController1 = [UIAlertController alertControllerWithTitle: @"IR Comment"
+                                                                                   message: @"Please enter closing comment for IR."
+                                                                            preferredStyle:UIAlertControllerStyleAlert];
+        [alertController1 addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+            textField.placeholder = @"IR Comment";
+            textField.textColor = [UIColor blackColor];
+            textField.clearButtonMode = UITextFieldViewModeWhileEditing;
+        }];
+        
+        [alertController1 addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+        [alertController1 addAction:[UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            NSArray * textfields = alertController1.textFields;
+            UITextField * password = textfields[0];
             
-            NSMutableArray *arr = [[NSMutableArray alloc] init];
-            for(int i = 0;i < [_tableView indexPathsForSelectedRows].count;i++)
+            if(![[[password text] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""])
             {
-                if([from isEqualToString:@"sent"])
-                {
-                   [arr addObject:[[[dataDic valueForKey:@"sentIR"] objectAtIndex:[[_tableView indexPathsForSelectedRows] objectAtIndex:i].row] valueForKey:@"id"]];
+                [dataDic setValue:password.text forKey:@"close_comment"];
+                
+                if([[_tableView indexPathsForSelectedRows] count]>0){
+                    
+                    NSMutableArray *arr = [[NSMutableArray alloc] init];
+                    for(int i = 0;i < [_tableView indexPathsForSelectedRows].count;i++)
+                    {
+                        if([from isEqualToString:@"sent"])
+                        {
+                            [arr addObject:[[[dataDic valueForKey:@"sentIR"] objectAtIndex:[[_tableView indexPathsForSelectedRows] objectAtIndex:i].row] valueForKey:@"id"]];
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    [self closeIncidentWebService:arr optionChoose:@"close-comment"];
                 }
-                else
-                {
-                    return;
-                }
+                
             }
-            
-            [self closeIncidentWebService:arr optionChoose:@"close-comment"];
-        }
+        }]];
+        
+        [self presentViewController:alertController1 animated:YES completion:nil];
+        
     }
 ]];
     
@@ -723,6 +765,7 @@
         {
             dic = [[[dataDic valueForKey:@"sentIR"] objectAtIndex:indexPath.row] mutableCopy];
         }
+        
         vc.dataDic = [dic mutableCopy];
         vc.from = @"view";
         [self.navigationController pushViewController:vc animated:true];
@@ -820,6 +863,7 @@
 
 -(void)listingWebService:(Boolean)choice
 {
+    
     [pullToRefresh endRefreshing];
     if (![appDelegate hasConnectivity]) {
         
@@ -1034,6 +1078,8 @@
     else
     {
         [params setValue:@"Y" forKey:@"ir_close_comment_status"];
+        [params setValue:[dataDic valueForKey:@"close_comment"] forKey:@"close_comment"];
+
     }
     
     WebConnector *webconnector = [[WebConnector alloc] init];
